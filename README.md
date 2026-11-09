@@ -14,7 +14,7 @@ gör dem globala: tryck t.ex. Ctrl+Shift+F9 var som helst i Windows för att sta
 2. Starta **Antifon-tangenter.exe** en gång. Den registrerar länken `antifon-tangenter://`,
    så att Antifons driftssida kan starta den.
 3. Öppna Antifons driftssida (logga in med fjärrdriftens lösenord) och tryck
-   **⌨ Kortkommandon i Windows** i verktygspanelen. Webbläsaren frågar om den får öppna
+   **⌨ Tangenter** i sidhuvudet. Webbläsaren frågar om den får öppna
    Antifon-tangenter – svara ja (och bocka gärna i att alltid tillåta).
 
 Programmet hämtar adressen och en egen nyckel från driftssidan och sparar dem i

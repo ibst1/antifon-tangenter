@@ -1,7 +1,7 @@
-; Antifon-tangenter — v1.0.0
+; Antifon-tangenter — v1.0.1
 ; Kortkommandon för Antifon i hela Windows, på datorn man styr Antifon från (fjärrdrift),
 ; och ett litet fönster överst med knapparna och läget. Startas från Antifons driftssida
-; (knappen ⌨ Kortkommandon i Windows), som skickar med adressen och nyckeln.
+; (knappen ⌨ Tangenter i sidhuvudet), som skickar med adressen och nyckeln.
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 Persistent
@@ -29,7 +29,7 @@ for arg in A_Args {
 if cfg.url = "" || cfg.token = "" {
     MsgBox("Antifon-tangenter vet inte vilken Antifon det ska styra.`n`n"
          . "Öppna Antifons driftssida (logga in med fjärrdriftens lösenord) och tryck "
-         . "⌨ Kortkommandon i Windows i verktygspanelen – eller Inställningar → Kortkommandon → "
+         . "⌨ Tangenter i sidhuvudet – eller Inställningar → Kortkommandon → "
          . "Starta på den här datorn.", "Antifon-tangenter", "Iconi")
     ExitApp
 }
