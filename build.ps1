@@ -36,4 +36,6 @@ Copy-Item (Join-Path $root 'LICENSE') $stage
 $zip = Join-Path $dist "Antifon-tangenter-$version.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path $stage -DestinationPath $zip
+# samma fil med ett fast namn: Antifons knapp laddar ner .../releases/latest/download/Antifon-tangenter.zip
+Copy-Item $zip (Join-Path $dist 'Antifon-tangenter.zip') -Force
 Write-Host "Klart: $zip"

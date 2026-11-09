@@ -21,5 +21,7 @@ jobs:
       - name: Skapa release med zip-filen
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Antifon-tangenter-*.zip
+          files: |
+            dist/Antifon-tangenter-*.zip
+            dist/Antifon-tangenter.zip
           generate_release_notes: true
