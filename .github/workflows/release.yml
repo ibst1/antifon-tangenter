@@ -1,0 +1,25 @@
+# En tagg v1.2.3 bygger Antifon-tangenter-1.2.3.zip och lägger den som release på GitHub.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bygg zip-filen
+        shell: powershell
+        run: .\build.ps1
+
+      - name: Skapa release med zip-filen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Antifon-tangenter-*.zip
+          generate_release_notes: true
