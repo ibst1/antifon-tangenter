@@ -1,7 +1,8 @@
-; Antifon-tangenter — v1.0.2
+; Antifon-tangenter — v1.1.0
 ; Kortkommandon för Antifon i hela Windows, på datorn man styr Antifon från (fjärrdrift),
-; och ett litet fönster överst med knapparna och läget. Startas från Antifons driftssida
-; (knappen ⌨ Tangenter i sidhuvudet), som skickar med adressen och nyckeln.
+; och ett litet fönster överst med knapparna och läget. Första gången startas det från Antifons
+; driftssida (Inställningar → Fjärrdrift → Starta Antifon-tangenter), som skickar med adressen och nyckeln.
+; Sedan ligger det som en ikon vid klockan och startas med genvägen Antifon-tangenter.
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 Persistent
@@ -14,6 +15,8 @@ global showWindow := IniRead(INI, "Fönster", "visa", "1") = "1"
 
 OnError(LogError)
 RegisterProtocol()
+SetIcon("gra")
+MakeShortcuts()
 
 ; startad med länken från driftssidan: antifon-tangenter://connect?url=…&token=…
 for arg in A_Args {
@@ -27,9 +30,10 @@ for arg in A_Args {
     }
 }
 if cfg.url = "" || cfg.token = "" {
-    MsgBox("Antifon-tangenter är nu installerat på den här datorn.`n`n"
+    MsgBox("Antifon-tangenter är nu installerat på den här datorn, med en genväg på skrivbordet och i Startmenyn.`n`n"
          . "Gå tillbaka till Antifons driftssida (inloggad med fjärrdriftens lösenord) och tryck "
-         . "⌨ Tangenter i sidhuvudet igen – då startar programmet med rätt adress.", "Antifon-tangenter", "Iconi")
+         . "Starta Antifon-tangenter under Inställningar → Fjärrdrift igen – då startar programmet med rätt adress. "
+         . "Sedan räcker genvägen.", "Antifon-tangenter", "Iconi")
     ExitApp
 }
 
@@ -46,14 +50,26 @@ for action in ["broadcast", "record", "clip", "remote", "marker"] {
 }
 g.OnEvent("Close", (*) => SetWindow(false))
 
-A_IconTip := "Antifon-tangenter"
+; --- ikonen vid klockan: läget i färgen och i texten, knapparna i menyn ------------------------------
+A_IconTip := "Antifon-tangenter – ansluter …"
+global ACTIONS := ["broadcast", "record", "clip", "remote", "marker"]
+global trayNames := Map()          ; action -> menyradens text just nu
 tray := A_TrayMenu
 tray.Delete()
 tray.Add("Visa fönstret med knapparna", (*) => SetWindow(!showWindow))
 tray.Add("Öppna driftssidan", (*) => Run(cfg.url "/admin"))
 tray.Add()
+for action in ACTIONS {
+    tray.Add(action, Press.Bind(action))
+    trayNames[action] := action
+}
+tray.Add()
+tray.Add("Starta med Windows", ToggleAutostart)
+if FileExist(AutostartLink())
+    tray.Check("Starta med Windows")
 tray.Add("Avsluta", (*) => ExitApp())
 tray.Default := "Visa fönstret med knapparna"
+tray.ClickCount := 1               ; ett klick på ikonen visar eller döljer fönstret
 
 Poll()
 SetTimer(Poll, 2000)
@@ -126,18 +142,22 @@ Render() {
     both := on("on_air") && on("recording")
     if !connected {
         txtStatus.Value := "Ingen kontakt med Antifon`n" cfg.url "`n" lastError
+        SetIcon("rod")
+        A_IconTip := "Antifon-tangenter – ingen kontakt med Antifon"
     } else {
-        l1 := linkedAir ? "Läge 1: " (both ? "PÅ · spelar in " Clock(state.Get("rec_seconds", 0)) : "av")
-                        : "Tolkning: " (on("on_air") ? "på" : "av") " · inspelning 1: " (on("recording") ? Clock(state.Get("rec_seconds", 0)) : "av")
-        l2 := (linkedClip ? "Läge 2: " : "Inspelning 2: ") (on("clip") ? "PÅ · " Clock(state.Get("clip_seconds", 0)) : "av")
-        l3 := linkedClip ? "" : "Distans: " (on("remote_on") ? "öppen" : "stängd") " · "
+        l1 := linkedAir ? "Gudstjänsten: " (both ? "PÅGÅR · spelar in " Clock(state.Get("rec_seconds", 0)) : "inte startad")
+                        : "Tolkning: " (on("on_air") ? "på" : "av") " · huvudinspelningen: " (on("recording") ? Clock(state.Get("rec_seconds", 0)) : "av")
+        l2 := (linkedClip ? "Predikan (podd): " : "Poddinspelningen: ") (on("clip") ? "PÅGÅR · " Clock(state.Get("clip_seconds", 0)) : "inte startad")
+        l3 := linkedClip ? "" : "Lösenord: " (on("remote_on") ? "öppet" : "stängt") " · "
         txtStatus.Value := l1 "`n" l2 "`n" l3 state.Get("listeners", "0") " lyssnare"
+        SetIcon("gron")
+        A_IconTip := "Antifon-tangenter – " (on("clip") ? "predikan pågår" : on("on_air") || on("recording") ? "gudstjänsten pågår" : "ansluten, inget startat")
     }
-    Label("broadcast", (linkedAir ? (both ? "■ Stoppa" : "▶ Starta") " läge 1"
+    Label("broadcast", (linkedAir ? (both ? "■ Avsluta" : "▶ Starta") " gudstjänsten"
                                   : (on("on_air") ? "■ Stäng av" : "▶ Slå på") " tolkningen"), true)
-    Label("record", (on("recording") ? "■ Stoppa" : "▶ Starta") " inspelning 1", !linkedAir)
-    Label("clip", (on("clip") ? "■ Stoppa " : "▶ Starta ") (linkedClip ? "läge 2" : "inspelning 2"), true)
-    Label("remote", (on("remote_on") ? "■ Stäng" : "▶ Öppna") " distans", !linkedClip)
+    Label("record", (on("recording") ? "■ Stoppa" : "▶ Starta") " huvudinspelningen", !linkedAir)
+    Label("clip", (on("clip") ? "■ Stoppa " : "● Starta ") (linkedClip ? "predikan (podd)" : "poddinspelningen"), true)
+    Label("remote", "Lösenord: " (on("remote_on") ? "■ stäng" : "▶ öppna"), !linkedClip)
     Label("marker", "◆ Markering", true)
     ; knapparna som syns, i ordning under statusraden
     txtStatus.GetPos(, &y, , &h)
@@ -159,6 +179,13 @@ Label(action, text, visible) {
     b.Text := text (hk != "" ? "     " hk : "")
     b.Visible := visible
     b.Enabled := connected
+    ; samma rad i ikonens meny (tabb = kortkommandot till höger)
+    name := text (hk != "" ? "`t" hk : "")
+    if trayNames[action] != name {
+        A_TrayMenu.Rename(trayNames[action], name)
+        trayNames[action] := name
+    }
+    A_TrayMenu.%(connected && visible ? "Enable" : "Disable")%(name)
 }
 
 Press(action, *) {
@@ -166,11 +193,11 @@ Press(action, *) {
         Http("POST", "/api/hotkey", '{"action":"' action '"}')
         Poll()
         on := (k) => state.Get(k, "0") = "1"
-        msg := action = "broadcast" ? (state.Get("link_air_record") = "1" ? "Läge 1 " (on("on_air") && on("recording") ? "på" : "av")
+        msg := action = "broadcast" ? (state.Get("link_air_record") = "1" ? "Gudstjänsten " (on("on_air") && on("recording") ? "startad" : "avslutad")
                                                                        : "Tolkning " (on("on_air") ? "på" : "av"))
-             : action = "record" ? "Inspelning 1 " (on("recording") ? "på" : "av")
-             : action = "clip" ? (state.Get("link_clip_remote") = "1" ? "Läge 2 " : "Inspelning 2 ") (on("clip") ? "på" : "av")
-             : action = "remote" ? "Distans " (on("remote_on") ? "öppen" : "stängd")
+             : action = "record" ? "Huvudinspelningen " (on("recording") ? "på" : "av")
+             : action = "clip" ? (state.Get("link_clip_remote") = "1" ? "Predikan (podd) " : "Poddinspelningen ") (on("clip") ? "startad" : "stoppad")
+             : action = "remote" ? "Lösenord " (on("remote_on") ? "öppet" : "stängt")
              : "Markering satt"
         Notify(msg)
     } catch as e {
@@ -181,6 +208,45 @@ Press(action, *) {
 Notify(text) {
     ToolTip(text, A_ScreenWidth // 2 - 80, 40)
     SetTimer(() => ToolTip(), -1800)
+}
+
+; --- ikonen, genvägarna och start med Windows --------------------------------------------------
+SetIcon(name) {
+    static now := ""
+    path := A_ScriptDir "\ikon-" name ".ico"
+    if name = now || !FileExist(path)
+        return
+    now := name
+    try TraySetIcon(path, , true)
+}
+
+MakeShortcuts() {
+    ; en gång: tas genvägen bort kommer den inte tillbaka
+    if IniRead(INI, "Genväg", "skapad", "0") = "1"
+        return
+    for folder in [A_Desktop, A_Programs]
+        try MakeLink(folder "\Antifon-tangenter.lnk")
+    IniWrite("1", INI, "Genväg", "skapad")
+    Log("genvägar skapade på skrivbordet och i Startmenyn")
+}
+
+MakeLink(path) {
+    icon := A_ScriptDir "\ikon-gron.ico"
+    FileCreateShortcut(A_AhkPath, path, A_ScriptDir, '"' A_ScriptFullPath '"',
+        "Antifons kortkommandon i hela Windows (fjärrdrift)", FileExist(icon) ? icon : "")
+}
+
+AutostartLink() => A_Startup "\Antifon-tangenter.lnk"
+
+ToggleAutostart(*) {
+    link := AutostartLink()
+    if FileExist(link) {
+        FileDelete(link)
+        A_TrayMenu.Uncheck("Starta med Windows")
+    } else {
+        MakeLink(link)
+        A_TrayMenu.Check("Starta med Windows")
+    }
 }
 
 ; --- hjälpfunktioner ----------------------------------------------------------------------------

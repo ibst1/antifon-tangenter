@@ -30,6 +30,7 @@ if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force $stage | Out-Null
 Copy-Item $base (Join-Path $stage 'Antifon-tangenter.exe')
 Copy-Item (Join-Path $root 'Antifon-tangenter.ahk') $stage
+Copy-Item (Join-Path $root 'ikon-*.ico') $stage
 Copy-Item (Join-Path $root 'README.md') (Join-Path $stage 'README.md')
 Copy-Item (Join-Path $root 'LICENSE') $stage
 

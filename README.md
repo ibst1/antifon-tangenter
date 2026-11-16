@@ -5,28 +5,38 @@ på datorn man styr Antifon från på distans – och, om man vill, ett litet f�
 överst med knapparna och läget.
 
 I webbläsaren fungerar Antifons kortkommandon bara när driftssidan är i fokus. Antifon-tangenter
-gör dem globala: tryck t.ex. Ctrl+Shift+F9 var som helst i Windows för att starta läge 1.
+gör dem globala: tryck t.ex. Ctrl+Shift+F9 var som helst i Windows för att starta gudstjänsten.
+Programmet ligger som en ikon (**A**) vid klockan.
 
 ## Så kommer du igång
 
 1. Ladda ner den senaste zip-filen under **Releases** och packa upp den var som helst
    (t.ex. i Dokument).
 2. Starta **Antifon-tangenter.exe** en gång. Den registrerar länken `antifon-tangenter://`,
-   så att Antifons driftssida kan starta den.
+   så att Antifons driftssida kan starta den, och gör genvägen **Antifon-tangenter** på skrivbordet
+   och i Startmenyn.
 3. Öppna Antifons driftssida (logga in med fjärrdriftens lösenord) och tryck
-   **⌨ Tangenter** i sidhuvudet. Webbläsaren frågar om den får öppna
+   **⌨ Starta Antifon-tangenter** under Inställningar → Fjärrdrift. Webbläsaren frågar om den får öppna
    Antifon-tangenter – svara ja (och bocka gärna i att alltid tillåta).
+
+Sedan räcker genvägen: programmet minns adressen och startar med den.
 
 Programmet hämtar adressen och en egen nyckel från driftssidan och sparar dem i
 `Antifon-tangenter.ini` bredvid programmet. Kortkommandona är desamma som på tolkdatorn och ändras
 under **Inställningar → Kortkommandon** i Antifon; programmet följer med inom några sekunder.
 
+## Ikonen vid klockan
+
+Antifon-tangenter ligger som en ikon (**A** på en rundad kvadrat) vid klockan: grön = kontakt med Antifon,
+röd = ingen kontakt, grå = ansluter. Håll musen över ikonen för att se läget. Ett klick visar eller döljer
+fönstret med knapparna. Högerklick ger samma knappar som fönstret (med kortkommandona), **Öppna driftssidan**,
+**Starta med Windows** och **Avsluta**.
+
 ## Fönstret med knapparna
 
-Fönstret visar läget (läge 1, läge 2, distans, antal lyssnare) och en knapp per funktion med
-kortkommandot bredvid. Det ligger alltid överst. Stäng det med krysset, eller slå av och på det med
-**Visa fönstret med knapparna** i ikonens meny i aktivitetsfältet (där finns också **Öppna driftssidan**
-och **Avsluta**). Fönstrets läge sparas.
+Fönstret visar läget (gudstjänsten, predikan, antal lyssnare) och en knapp per funktion med
+kortkommandot bredvid. Det ligger alltid överst. Stäng det med krysset – programmet ligger kvar vid klockan –
+eller klicka på ikonen. Fönstrets läge sparas.
 
 ## Bra att veta
 
